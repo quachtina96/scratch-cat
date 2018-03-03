@@ -1,0 +1,88 @@
+{
+	"objName": "Stage",
+	"sounds": [{
+			"soundName": "pop",
+			"soundID": 1,
+			"md5": "83a9787d4cb6f3b7632b4ddfebf74367.wav",
+			"sampleCount": 258,
+			"rate": 11025,
+			"format": ""
+		}],
+	"costumes": [{
+			"costumeName": "backdrop1",
+			"baseLayerID": 3,
+			"baseLayerMD5": "739b5e2a2435f6e1ec2993791b423146.png",
+			"bitmapResolution": 1,
+			"rotationCenterX": 240,
+			"rotationCenterY": 180
+		}],
+	"currentCostumeIndex": 0,
+	"penLayerMD5": "5c81a336fab8be57adc039a8a2b33ca9.png",
+	"penLayerID": 0,
+	"tempoBPM": 60,
+	"videoAlpha": 0.5,
+	"children": [{
+			"objName": "Sprite1",
+			"scripts": [[22,
+					22,
+					[["whenGreenFlag"],
+						["playSound:", "meow"],
+						["doPlaySoundAndWait", "meow"],
+						["stopAllSounds"],
+						["playDrum", 1, 0.1],
+						["rest:elapsed:from:", 0.25],
+						["noteOn:duration:elapsed:from:", 60, 0.1],
+						["instrument:", 1],
+						["changeVolumeBy:", -10],
+						["setVolumeTo:", ["tempo"]],
+						["changeTempoBy:", 20],
+						["setTempoTo:", ["volume"]]]],
+				[24,
+					337,
+					[["whenGreenFlag"],
+						["doForever", [["doPlaySoundAndWait", "meow"], ["noteOn:duration:elapsed:from:", 60, 0.5], ["playDrum", 1, 0.25]]]]]],
+			"sounds": [{
+					"soundName": "meow",
+					"soundID": 0,
+					"md5": "83c36d806dc92327b9e7049a565c6bff.wav",
+					"sampleCount": 18688,
+					"rate": 22050,
+					"format": ""
+				}],
+			"costumes": [{
+					"costumeName": "costume1",
+					"baseLayerID": 1,
+					"baseLayerMD5": "f9a1c175dbe2e5dee472858dd30d16bb.svg",
+					"bitmapResolution": 1,
+					"rotationCenterX": 47,
+					"rotationCenterY": 55
+				},
+				{
+					"costumeName": "costume2",
+					"baseLayerID": 2,
+					"baseLayerMD5": "6e8bd9ae68fdb02b7e1e3df656a75635.svg",
+					"bitmapResolution": 1,
+					"rotationCenterX": 47,
+					"rotationCenterY": 55
+				}],
+			"currentCostumeIndex": 0,
+			"scratchX": 0,
+			"scratchY": 0,
+			"scale": 1,
+			"direction": 90,
+			"rotationStyle": "normal",
+			"isDraggable": false,
+			"indexInLibrary": 1,
+			"visible": true,
+			"spriteInfo": {
+			}
+		}],
+	"info": {
+		"spriteCount": 1,
+		"videoOn": false,
+		"flashVersion": "MAC 21,0,0,174",
+		"scriptCount": 2,
+		"swfVersion": "v445.1",
+		"userAgent": "Scratch 2.0 Offline Editor"
+	}
+}

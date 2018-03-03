@@ -1,0 +1,40 @@
+{
+  "id": "7823ad69-f46d-4615-928f-0f38fcb99d3d",
+  "name": "add_to_program",
+  "auto": true,
+  "contexts": [],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [
+        {
+          "name": "add_to_program-followup",
+          "parameters": {},
+          "lifespan": 2
+        }
+      ],
+      "parameters": [],
+      "messages": [
+        {
+          "type": 0,
+          "speech": []
+        }
+      ],
+      "defaultResponsePlatforms": {},
+      "speech": []
+    }
+  ],
+  "priority": 500000,
+  "cortanaCommand": {
+    "navigateOrService": "NAVIGATE",
+    "target": ""
+  },
+  "webhookUsed": false,
+  "webhookForSlotFilling": false,
+  "lastUpdate": 1519365370,
+  "fallbackIntent": false,
+  "events": [],
+  "userSays": [],
+  "followUpIntents": [],
+  "templates": []
+}
