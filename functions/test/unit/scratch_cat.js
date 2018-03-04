@@ -7,6 +7,6 @@ test('dummy', t => {
 });
 
 test('', t => {
-
+ t.end()
 });
 

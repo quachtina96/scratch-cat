@@ -34,10 +34,14 @@ class ScratchCatModel {
       original: instruction
     };
 
+    if (!instruction) {
+      return instructionJson;
+    }
+
     let commandTemplates = {
       'when EVENT, you CMD': /when (.*), you (.*)/,
       'when EVENT, CMD': /when (.*), (.*)/,
-      'then/next/after, CMD': /[then|next|after], (.*)/,
+      'then/next/after, CMD': /(then|next|after), (.*)/,
       'first, CMD': /first, (.*)/,
     };
     var keys = Object.keys(commandTemplates);
@@ -46,49 +50,74 @@ class ScratchCatModel {
       var key = keys[i];
       var matches = instruction.match(commandTemplates[key]);
       if (matches) {
-        console.log(key)
-        console.log(matches);
         switch (key) {
           case 'when EVENT, you CMD':
-            instructionJson.event = matches[1];
-            instructionJson.command = matches[2];
-            return instructionJson;
           case 'when EVENT, CMD':
             instructionJson.event = matches[1];
             instructionJson.command = matches[2];
             return instructionJson;
           case 'then/next/after, CMD':
-            instructionJson.command = matches[1];
+            instructionJson.event = 'after last command';
+            instructionJson.command = matches[2];
             return instructionJson;
           case 'first, CMD':
+            instructionJson.event = 'first';
             instructionJson.command = matches[1];
             return instructionJson;
-          default:
-            console.log('CMD, i guess');
         }
       }
     }
 
+    instructionJson.command = instruction;
+
     return instructionJson;
+  }
+
+  jsonToScratch_(instructionJson) {
+    if (!instructionJson.command) {
+      return null;
+    }
+    // Process command.
+    var instructionTokens = instructionJson.command.split(' ');
+    if (instructionTokens) {
+      // Assume first word is the verb and the rest of the command is an
+      // argument.
+      var verb = instructionTokens[0];
+      // TODO: add more cases to handle wider variety of possible scratch
+      // commands.
+      if (verb == 'say') {
+        var opcode = 'say:';
+      }
+      var command = [opcode, instructionTokens.slice(1).join(' ')];
+    }
+
+    if (instructionJson.event) {
+      if (instructionJson.event.toLowerCase().startsWith('i say')) {
+        let argument = instructionJson.event.substring(5);
+        command = [["doAsk", ""],["doIf", ["=", ["answer"], argument], [command]]];
+      }
+      // else if (instructionJson.event == 'first') {
+      //   // TODO: Need some way to pass this information to Scratch model for building the progam.
+      // } else if (instructionJson.event == 'after last command') {
+      //   // TODO: Need some way to pass this information to Scratch model for building the progam.
+      // }
+    }
+    return command;
   }
 
   /**
    * Returns the steps of the Scratch program.
    */
-  getSteps(instruction, opt_event) {
-    var instructionTokens = instruction.split(' ');
-    // TODO: Remove assumption that the instruction follows specific format in
-    // which first word is the command and the rest of the instruction is a
-    // single argument for the command.
-    var statement = [instructionTokens[0], instructionTokens.slice(1, instructionTokens.length).join(' ')]
-
-    if (opt_event) {
-      var eventTokens = opt_event.split(' ');
-      var event = eventTokens.slice(1, eventTokens.length).join(' ');
-      // wrap the statement with the event.
+  getSteps(instruction) {
+    //TODO: detect multiple statements and split them.
+    let sentences = instruction.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+    var steps = []
+    for (var i = 0; i < sentences.length; i++) {
+      var instructionJson = this.extractArgs_(sentences[i]);
+      var scratchInstruction = this.jsonToScratch_(instructionJson);
+      steps.push(scratchInstruction);
     }
-
-    return [statement];
+    return steps;
   }
 
   /**
