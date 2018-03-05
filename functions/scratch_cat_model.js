@@ -3,8 +3,6 @@
  * programming.
  */
 
-let vm = require('scratch-vm');
-
 class ScratchCatModel {
   constructor (opt_availableActions) {
     // Map actions to series of steps.
@@ -85,7 +83,7 @@ class ScratchCatModel {
       var verb = instructionTokens[0];
       // TODO: add more cases to handle wider variety of possible scratch
       // commands.
-      if (verb == 'say') {
+      if (verb === 'say') {
         var opcode = 'say:';
       }
       var command = [opcode, instructionTokens.slice(1).join(' ')];

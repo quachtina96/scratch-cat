@@ -13,7 +13,7 @@ var arraysEqual = function(array1, array2) {
         return false;
 
     // compare lengths - can save a lot of time
-    if (array1.length != array2.length)
+    if (array1.length !== array2.length)
         return false;
 
     for (var i = 0, l=array1.length; i < l; i++) {
@@ -23,7 +23,7 @@ var arraysEqual = function(array1, array2) {
             if (!array1[i].equals(array2[i]))
                 return false;
         }
-        else if (array1[i] != array2[i]) {
+        else if (array1[i] !== array2[i]) {
             // Warning - two different object instances will never be equal: {x:20} != {x:20}
             return false;
         }
