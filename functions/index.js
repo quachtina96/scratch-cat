@@ -5,53 +5,93 @@ const App = require('actions-on-google').DialogflowApp;
 const functions = require('firebase-functions');
 const ScratchCatModel = require('./scratch_cat_model.js');
 
-exports.scratchCat = functions.https.onRequest((request, response) => {
-  const app = new App({request: request, response: response});
-  console.log('Request headers: ' + JSON.stringify(request.headers));
-  console.log('Request body: ' + JSON.stringify(request.body));
+/** Dialogflow Actions {@link https://dialogflow.com/docs/actions-and-parameters#actions} */
+const Actions = {
+  DISCOVER_ABILITY: 'discover_ability',
+  TEACH_COMMAND: 'discover_ability.discover_ability-yes',
+  CONFIRM_COMMMAND: 'confirm_command', //?
+  CORRECT_COMMMAND: 'correct_command', //?
+  CALL_COMMAND: 'call_command',
+  DEFINE_PROGRAM: 'define_program',
+  DEFINE_PROGRAM_FROM_ABILITY: 'discover_ability.discover_ability-yes.discover_ability-yes-yes',
+  ADD_TO_PROGRAM: 'add_to_program', //?
+  EDIT_PROGRAM: 'edit_program', //?
+};
 
-  // SCRATCHCAT INSTANCE
-  var actions = {
-    'sing': function(app) {
-      app.tell('lalala');
-    },
-    'say': function(app, whatToSay) {
-      app.tell(whatToSay);
+/**
+ * The ScratchCat class handles Dialogflow requests.
+ */
+class ScratchCat {
+  /**
+   * Create a new instance of the app handler
+   * @param {AoG.ExpressRequest} req
+   * @param {AoG.ExpressResponse} res
+   */
+  constructor (request, response) {
+    this.app = new App({request: request, response: response});
+    console.log('Request headers: ' + JSON.stringify(request.headers));
+    console.log('Request body: ' + JSON.stringify(request.body));
+    this.model = new ScratchCatModel();
+  }
+
+  /**
+   * Get the Dialogflow intent and handle it using the appropriate method
+   */
+  run() {
+    const map = this;
+    const action = this.app.getIntent();
+    console.log(action);
+    if (!action) {
+      return this.app.ask(`I didn't hear you say anything. If you want, you can program me by telling me what to do.`);
     }
-  };
-  var scratchCat = new ScratchCatModel(actions);
 
+    try {
+      map[action]();
+    } catch (e){
+      console.log(e);
+      console.dir('map');
+      console.dir(map);
+      console.log('action');
+      console.log(action);
+    }
+  }
 
-  // DEFINING ACTION FULFILLMENT FUNCTIONS
-  function discoverAbility (app) {
+  triggerEvent_(eventName, opt_dataMap) {
+    var dataMap = opt_dataMap ? opt_dataMap : {}
+    const response = {
+        followupEvent: {
+            name: eventName,
+            data: dataMap
+        }
+      }
+    return this.app.response_.status(200).send(response);
+  }
+
+  [Actions.DISCOVER_ABILITY]() {
     // TODO: provide the correct parameter
-    var action = app.getArgument('command');
+    var action = this.app.getArgument('command');
     // replace instances of 'me' with 'you' in the action.
     action = action.replace(/me/i, 'you');
-    if (scratchCat.hasAbilityTo(action)) {
-      app.tell("I can " + action);
+    if (this.model.hasAbilityTo(action)) {
+      this.app.tell("I can " + action);
     } else {
-      app.ask("I don't know how to " + action + ". Can you teach me?");
+      this.app.ask("I don't know how to " + action + ". Can you teach me?");
     }
+  }
+
+  [Actions.DEFINE_PROGRAM_FROM_ABILITY]() {
+    this.triggerEvent_(this.app, 'discover_unknown_ability');
   }
 
   /**
    * When a user has agreed to teach a command to Scratch and has said a step,
    * Scratch will ask if the instruction is correct.
    */
-  function teachCommand(app) {
+  [Actions.TEACH_COMMAND]() {
     // var action = app.getArgument('#discover_ability.command');
-    var action = app.getArgument('action');
-    var instruction = app.getArgument('command')[0];
-    app.ask("Okay. " + instruction + " like this?");
-  }
-  /**
-   * When a user confirms that the instruction is correct, Scratch will save the
-   * command into its definition of the program. As a result, the teachCommand's
-   * context should be passed to the confirm command intention  (which should
-   * follow the teachCommand.
-   */
-  function confirmCommand(app) {
+    var action = this.app.getArgument('action');
+    var instruction = this.app.getArgument('command')[0];
+    this.app.ask("Okay. " + instruction + " like this?");
   }
 
   /**
@@ -60,11 +100,20 @@ exports.scratchCat = functions.https.onRequest((request, response) => {
    * context should be passed to the confirm command intention  (which should
    * follow the teachCommand.
    */
-  function correctCommand(app) {
+  [Actions.CONFIRM_COMMMAND]() {
   }
 
-  function callCommand(app) {
-    var instruction = app.getArgument('command');
+  /**
+   * When a user confirms that the instruction is correct, Scratch will save the
+   * command into its definition of the program. As a result, the teachCommand's
+   * context should be passed to the confirm command intention  (which should
+   * follow the teachCommand.
+   */
+  [Actions.CORRECT_COMMMAND]() {
+  }
+
+  [Actions.CALL_COMMAND]() {
+    var instruction = this.app.getArgument('command');
     if (instruction) {
       // if you can parse the instruction successfully, get the steps and execute
       // them. issues with parsing may arise because some higher level actions
@@ -76,66 +125,49 @@ exports.scratchCat = functions.https.onRequest((request, response) => {
               name: "call_command_unknown",
           }
         }
-      return app.response_.status(200).send(response);
+      return this.app.response_.status(200).send(response);
     }
     else {
-      app.tell("Sorry, please try again.");
+      this.app.tell("Sorry, please try again.");
     }
   }
 
-  function triggerEvent_(app, eventName, opt_dataMap) {
-    var dataMap = opt_dataMap ? opt_dataMap : {}
-    const response = {
-        followupEvent: {
-            name: eventName,
-            data: dataMap
-        }
-      }
-    return app.response_.status(200).send(response);
+  [Actions.DEFINE_PROGRAM]() {
+    var action = this.app.getArgument('#call_command.command');
+    var instruction = this.app.getArgument('command');
+    var event = this.app.getArgument('event');
+    this.model.addAction(action, this.model.getStep(instruction, event));
   }
 
-  function defineProgram(app) {
-    var action = app.getArgument('#call_command.command');
-    var instruction = app.getArgument('command');
-    var event = app.getArgument('event');
-    scratchCat.addAction(action, scratchCat.getStep(instruction, event));
-  }
-
-  function addToProgram(app) {
+  [Actions.ADD_TO_PROGRAM]() {
     // TODO: set the correct context.
-    var action = app.getArgument('CONTEXT_HERE.command');
-    var instruction = app.getArgument('command');
-    var event = app.getArgument('event');
-    scratchCat.appendStep(action, scratchCat.getStep(instruction, event));
+    var action = this.app.getArgument('CONTEXT_HERE.command');
+    var instruction = this.app.getArgument('command');
+    var event = this.app.getArgument('event');
+    this.model.appendStep(action, this.model.getStep(instruction, event));
   }
 
   /**
    * Will be called when user wants to replace a statement in the program with
    * a new command.
    */
-  function editProgram(app) {
+  [Actions.EDIT_PROGRAM]() {
     // TODO: how do we know what command to replace? We can get this from the
     // user. ("instead of COMMAND_OLD, COMMAND_NEW")
     // TODO: set the correct context.
-    var action = app.getArgument('CONTEXT_HERE.command');
-    var instruction = app.getArgument('command');
-    var event = app.getArgument('event');
+    var action = this.app.getArgument('CONTEXT_HERE.command');
+    var instruction = this.app.getArgument('command');
+    var event = this.app.getArgument('event');
     // TODO: get index of command to replace.
-    scratchCat.replaceStep(action, index,scratchCat.getStep(instruction, event));
+    this.model.replaceStep(action, index,this.model.getStep(instruction, event));
   }
+}
 
-
-  let actionMap = new Map();
-  actionMap.set('discover_ability', discoverAbility);
-  actionMap.set('call_command', callCommand);
-  actionMap.set('discover_ability.discover_ability-yes', teachCommand);
-  actionMap.set('discover_ability.discover_ability-yes.discover_ability-yes-yes', app => {
-    triggerEvent_(app, 'discover_unknown_ability');
-  });
- actionMap.set('define_program', defineProgram);
-
-app.handleRequest(actionMap);
-});
-
-
-
+// HTTP Cloud Function for Firebase handler
+exports.scratchCat = functions.https.onRequest(
+  /** @param {*} res */ (req, res) => new ScratchCat(req, res).run()
+);
+module.exports = {
+  Actions,
+  ScratchCat
+};
