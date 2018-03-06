@@ -26,11 +26,12 @@ class ScratchCat {
    * Create a new instance of the app handler
    * @param {AoG.ExpressRequest} req
    * @param {AoG.ExpressResponse} res
+   * @param {!DialogFlowApp} opt_app
    */
-  constructor (request, response) {
-    this.app = new App({request: request, response: response});
-    console.log('Request headers: ' + JSON.stringify(request.headers));
-    console.log('Request body: ' + JSON.stringify(request.body));
+  constructor (request, response, opt_app) {
+    this.app = opt_app ? opt_app : new App({request: request, response: response});
+    // console.log('Request headers: ' + JSON.stringify(request.headers));
+    // console.log('Request body: ' + JSON.stringify(request.body));
     this.model = new ScratchCatModel();
   }
 
@@ -42,17 +43,16 @@ class ScratchCat {
     const action = this.app.getIntent();
     console.log(action);
     if (!action) {
-      return this.app.ask(`I didn't hear you say anything. If you want, you can program me by telling me what to do.`);
+      return this.app.tell("I didn't hear you say anything. If you want, you can program me by telling me what to do.");
     }
 
     try {
       map[action]();
     } catch (e){
       console.log(e);
-      console.dir('map');
+      console.log('ScratchCat failed on action: ' + action);
+      console.dir('ScratchCat looks like:');
       console.dir(map);
-      console.log('action');
-      console.log(action);
     }
   }
 
@@ -70,11 +70,16 @@ class ScratchCat {
   [Actions.DISCOVER_ABILITY]() {
     // TODO: provide the correct parameter
     var action = this.app.getArgument('command');
+    if (!action) {
+      this.app.tell("You can teach me by telling me what to do.");
+      return;
+    }
     // replace instances of 'me' with 'you' in the action.
-    action = action.replace(/me/i, 'you');
     if (this.model.hasAbilityTo(action)) {
+      action = action.replace(/me/i, 'you');
       this.app.tell("I can " + action);
     } else {
+      action = action.replace(/me/i, 'you');
       this.app.ask("I don't know how to " + action + ". Can you teach me?");
     }
   }
@@ -167,6 +172,7 @@ class ScratchCat {
 exports.scratchCat = functions.https.onRequest(
   /** @param {*} res */ (req, res) => new ScratchCat(req, res).run()
 );
+
 module.exports = {
   Actions,
   ScratchCat
