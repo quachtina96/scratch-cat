@@ -30,8 +30,6 @@ class ScratchCat {
    */
   constructor (request, response, opt_app) {
     this.app = opt_app ? opt_app : new App({request: request, response: response});
-    // console.log('Request headers: ' + JSON.stringify(request.headers));
-    // console.log('Request body: ' + JSON.stringify(request.body));
     this.model = new ScratchCatModel();
   }
 

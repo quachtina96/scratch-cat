@@ -78,6 +78,35 @@ test('run catches error when action fails.', t => {
   t.end();
 });
 
+test('triggerEvent_ triggers intents responding to given event.', t => {
+  // POST
+  var request = {
+    "contexts": [
+      "string"
+    ],
+    "lang": "string",
+    "query": "string",
+    "sessionId": "string",
+    "timezone": "string"
+  }
+  var response = {}
+  var scratch = new sc.ScratchCat(request, response);
+  scratch.run();
+  // expect the speechOutput to come from the triggered intent;
+  t.same(app.speechOutput, []);
+  t.end();
+});
+
+// test('triggerEvent_ triggers no intents and warns when given an unknown event.', t => {
+//   // create intents, define what events they respond to, check that ONLY the
+//   // appropriate intents were triggered.
+//   // big question: Where do these intents live? They are stored on Google's
+//   // dialogflow server, and information about them is sent through HTTP requests
+//   // and responses that contain JSON.
+//   t.end();
+// });
+
+
 test('DiSCOVER_ABILITY prompts for action', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DISCOVER_ABILITY);
