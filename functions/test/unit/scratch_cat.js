@@ -1,16 +1,12 @@
 const test = require('tap').test;
 const sc = require('../../index.js');
 
-// TODO: look at the API for this.
-// TODO: address concern that I am abstracting too much away.
-// I will also need to test this?
 class mockDialogFlowApp {
-  // TODO: the request should have a header and body
 	constructor() {
-    // maintain the set of actions that occured.
+    // maintain the set of outputs that occured.
     this.speechOutput = [];
     this.mockIntent = '';
-    this.wut = {};
+    this.args = {};
 	}
 
   setIntent_(intent){
@@ -18,15 +14,15 @@ class mockDialogFlowApp {
   }
 
   setArgument(argName, value) {
-    this.wut[argName] = value;
+    this.args[argName] = value;
   }
 
   setArguments(argsJson){
-    this.wut = argsJson;
+    this.args = argsJson;
   }
 
   addArguments(argsJson) {
-    this.wut = Object.assign(this.wut, argsJson);
+    this.args = Object.assign(this.args, argsJson);
   }
 
 	getIntent() {
@@ -42,7 +38,7 @@ class mockDialogFlowApp {
 	}
 
 	getArgument(argName) {
-    return this.wut[argName];
+    return this.args[argName];
 	}
 
 	// this.app.response_.status(200).send(response);
