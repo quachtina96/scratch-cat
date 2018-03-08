@@ -12,6 +12,7 @@ const Actions = {
   CONFIRM_COMMMAND: 'confirm_command', //?
   CORRECT_COMMMAND: 'correct_command', //?
   CALL_COMMAND: 'call_command',
+  CALL_COMMAND_YES: 'call_command.call_command-yes',
   DEFINE_PROGRAM: 'define_program',
   DEFINE_PROGRAM_FROM_ABILITY: 'discover_ability.discover_ability-yes.discover_ability-yes-yes',
   ADD_TO_PROGRAM: 'add_to_program', //?
@@ -39,7 +40,6 @@ class ScratchCat {
   run() {
     const map = this;
     const action = this.app.getIntent();
-    console.log(action);
     if (!action) {
       return this.app.tell("I didn't hear you say anything. If you want, you can program me by telling me what to do.");
     }
@@ -47,10 +47,11 @@ class ScratchCat {
     try {
       map[action]();
     } catch (e){
-      console.log(e);
-      console.log('ScratchCat failed on action: ' + action);
-      console.dir('ScratchCat looks like:');
-      console.dir(map);
+      var errorReporting = [];
+      errorReporting.push(e);
+      errorReporting.push('ScratchCat failed on action: ' + action);
+      errorReporting.push('ScratchCat looks like' + JSON.stringify(map));
+      return errorReporting.join('\n');
     }
   }
 
@@ -93,7 +94,7 @@ class ScratchCat {
   [Actions.TEACH_COMMAND]() {
     // var action = app.getArgument('#discover_ability.command');
     var action = this.app.getArgument('action');
-    var instruction = this.app.getArgument('command')[0];
+    var instruction = this.app.getArgument('command');
     this.app.ask("Okay. " + instruction + " like this?");
   }
 
@@ -118,28 +119,36 @@ class ScratchCat {
   [Actions.CALL_COMMAND]() {
     var instruction = this.app.getArgument('command');
     if (instruction) {
-      // if you can parse the instruction successfully, get the steps and execute
-      // them. issues with parsing may arise because some higher level actions
-      // have not yet been defined by the user.
-      // otherwise,
-      const response = {
-          speech: "I don't know how to do that. What should I do when you say '" + instruction + "'?",
-          followupEvent: {
-              name: "call_command_unknown",
-          }
-        }
-      return this.app.response_.status(200).send(response);
+      // TODO: if you can parse the instruction successfully, get the steps and execute
+      // them.
+      if (this.model.hasAbilityTo(instruction)) {
+        this.app.tell("Okay. I can do that. Let's pretend I just did.");
+      } else {
+        this.app.ask("I don't know how to do that. Can you teach me what I should when you say '" + instruction + "'?");
+      }
     }
     else {
-      this.app.tell("Sorry, please try again.");
+      this.app.tell("Sorry, what would you like me to do?");
     }
   }
+
+  // followup intent to call_command_yes;
+  [Actions.CALL_COMMAND_YES]() {
+    const response = {
+        followupEvent: {
+            name: "call_command_unknown",
+        }
+      }
+    // TODO: do i need to pass this command to the define program context then?
+    return this.app.response_.status(200).send(response);
+    }
 
   [Actions.DEFINE_PROGRAM]() {
     var action = this.app.getArgument('#call_command.command');
     var instruction = this.app.getArgument('command');
     var event = this.app.getArgument('event');
     this.model.addAction(action, this.model.getStep(instruction, event));
+    this.app.ask("What's the next step?");
   }
 
   [Actions.ADD_TO_PROGRAM]() {

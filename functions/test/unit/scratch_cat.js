@@ -69,39 +69,11 @@ test('run catches error when action fails.', t => {
   app.setIntent_('Nonexistent Intent');
   // Instead of passing a request and response, we pass null values;
   var scratch = new sc.ScratchCat(null, null, app);
-  scratch.run();
-  t.same(app.speechOutput, []);
+  let output = scratch.run();
+  let expected = `TypeError: map[action] is not a function\nScratchCat failed on action: Nonexistent Intent\nScratchCat looks like{"app":{"speechOutput":[],"mockIntent":"Nonexistent Intent","args":{}},"model":{"actions":{},"currentProgram":[]}}`
+  t.same(output, expected);
   t.end();
 });
-
-test('triggerEvent_ triggers intents responding to given event.', t => {
-  // POST
-  var request = {
-    "contexts": [
-      "string"
-    ],
-    "lang": "string",
-    "query": "string",
-    "sessionId": "string",
-    "timezone": "string"
-  }
-  var response = {}
-  var scratch = new sc.ScratchCat(request, response);
-  scratch.run();
-  // expect the speechOutput to come from the triggered intent;
-  t.same(app.speechOutput, []);
-  t.end();
-});
-
-// test('triggerEvent_ triggers no intents and warns when given an unknown event.', t => {
-//   // create intents, define what events they respond to, check that ONLY the
-//   // appropriate intents were triggered.
-//   // big question: Where do these intents live? They are stored on Google's
-//   // dialogflow server, and information about them is sent through HTTP requests
-//   // and responses that contain JSON.
-//   t.end();
-// });
-
 
 test('DiSCOVER_ABILITY prompts for action', t => {
   var app = new mockDialogFlowApp();
