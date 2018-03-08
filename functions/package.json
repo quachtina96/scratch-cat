@@ -10,7 +10,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "tap test/unit/*.js && tap test/integration/*.js"
+    "test": "tap test/unit/*.js"
   },
   "dependencies": {
     "actions-on-google": "^1.0.0",
