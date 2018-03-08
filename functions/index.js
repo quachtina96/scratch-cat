@@ -167,11 +167,10 @@ class ScratchCat {
 }
 
 // HTTP Cloud Function for Firebase handler
-exports.scratchCat = functions.https.onRequest(
-  /** @param {*} res */ (req, res) => new ScratchCat(req, res).run()
-);
+exports.scratchCat = functions.https.onRequest((req, res) => {
+  let scratch = new ScratchCat(req, res);
+  scratch.run();
+});
 
-module.exports = {
-  Actions,
-  ScratchCat
-};
+module.exports.Actions = Actions;
+module.exports.ScratchCat = ScratchCat;
