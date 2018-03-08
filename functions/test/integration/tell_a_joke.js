@@ -9,13 +9,19 @@ var request = require('request');
 // TODO: Potentially Refactor the Mock Request to be made up of mul
 class MockRequest {
   constructor(body) {
-    this.body = body ? body : this.getFullExample();
+    this.body = body ? body : this.getPlayExample();
     this.result = {};
   }
 
   // https://expressjs.com/en/api.html#req.get
   get(param) {
     return "dummy_header";
+  }
+
+  set(jsonDict) {
+    for (var key in jsonDict) {
+      this.body[key] = jsonDict[key];
+    }
   }
 
   // Example pulled from Actions on Google documentation.
@@ -36,6 +42,38 @@ class MockRequest {
                   {
                       "inputType": "KEYBOARD",
                       "query": "talk to my test app"
+                  }
+              ]
+          }
+      ],
+      "surface": {
+          "capabilities": [
+              {
+                  "name": "actions.capability.AUDIO_OUTPUT"
+              },
+              {
+                  "name": "actions.capability.SCREEN_OUTPUT"
+              }
+          ]
+      }};
+  }
+
+  getPlayExample() {
+    return {
+      "user": {
+          "userId": "wCBxFjVLK8I+nxIXfFOHEf/iAvvaTFuzUdBw6Gv5K3Q="
+      },
+      "conversation": {
+          "conversationId": "1494709404186",
+          "type": "NEW"
+      },
+      "inputs": [
+          {
+              "intent": "actions.intent.welcome",
+              "rawInputs": [
+                  {
+                      "inputType": "KEYBOARD",
+                      "query": "hi"
                   }
               ]
           }
@@ -135,7 +173,8 @@ let expectedResponseBody = {
   };
 
 test('respond to hi', t => {
-  var request = new MockRequest({
+  var request = new MockRequest();
+  request.set({
     "contexts": ["_actions_on_google_"],
     "lang": "en",
     "query": "hi",
