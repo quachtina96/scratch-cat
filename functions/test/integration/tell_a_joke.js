@@ -9,7 +9,7 @@ var request = require('request');
 // TODO: Potentially Refactor the Mock Request to be made up of mul
 class MockRequest {
   constructor(body) {
-    this.body = body;
+    this.body = body ? body : this.getFullExample();
     this.result = {};
   }
 
@@ -17,7 +17,42 @@ class MockRequest {
   get(param) {
     return "dummy_header";
   }
+
+  // Example pulled from Actions on Google documentation.
+  // https://developers.google.com/actions/reference/rest/conversation-webhook
+  getFullExample() {
+    return {
+      "user": {
+          "userId": "wCBxFjVLK8I+nxIXfFOHEf/iAvvaTFuzUdBw6Gv5K3Q="
+      },
+      "conversation": {
+          "conversationId": "1494709404186",
+          "type": "NEW"
+      },
+      "inputs": [
+          {
+              "intent": "actions.intent.MAIN",
+              "rawInputs": [
+                  {
+                      "inputType": "KEYBOARD",
+                      "query": "talk to my test app"
+                  }
+              ]
+          }
+      ],
+      "surface": {
+          "capabilities": [
+              {
+                  "name": "actions.capability.AUDIO_OUTPUT"
+              },
+              {
+                  "name": "actions.capability.SCREEN_OUTPUT"
+              }
+          ]
+      }};
+  }
 }
+
 
 class MockResponse {
   constructor() {
