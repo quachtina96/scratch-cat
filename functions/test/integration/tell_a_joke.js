@@ -6,7 +6,6 @@ const test = require('tap').test;
 const sc = require('../../index.js');
 var request = require('request');
 
-// TODO: Potentially Refactor the Mock Request to be made up of mul
 class MockRequest {
   constructor(body) {
     this.body = body ? body : this.getPlayExample();
