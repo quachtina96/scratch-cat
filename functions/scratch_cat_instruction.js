@@ -90,7 +90,7 @@ class ScratchCatInstruction {
       var verb = instructionTokens[0];
       // TODO: add more cases to handle wider variety of possible scratch
       // commands.
-      if (verb === 'say') {
+      if (verb.toLowerCase() === 'say') {
         var opcode = 'say:';
       }
       var command = [opcode, instructionTokens.slice(1).join(' ')];
