@@ -49,8 +49,6 @@ class ScratchCatAction {
    **/
   appendInstruction(instruction) {
     let newInstruction = new ScratchCatInstruction(instruction);
-    console.dir('newInstruction');
-    console.dir(newInstruction);
     this.instructions.push(newInstruction);
   }
 
