@@ -3,7 +3,8 @@
  * programming.
  */
 'use strict';
-const ScratchCatInstruction = require('./scratch_cat_instruction.js');
+const ScratchCatAction = require('./scratch_cat_action.js');
+
 
 class ScratchCatModel {
   constructor (opt_availableActions) {
@@ -12,6 +13,7 @@ class ScratchCatModel {
     // TODO: delete var below if not needed.
     // currentProgram maintains list of steps defining the current program.
     this.currentProgram = [];
+    this.currentAction = null;
   }
 
   getAvailableActions() {
@@ -30,6 +32,19 @@ class ScratchCatModel {
    **/
   addAction(actionName, instruction) {
     this.actions[actionName] = new ScratchCatInstruction(instruction);
+  }
+
+  /**
+   * Adds step to program associated with existing ability.
+   * @param {!String} actionName Name of the action
+   * @param {!Object} step The new step
+   **/
+  appendInstruction(instruction) {
+    if (this.currentAction) {
+      this.currentAction.appendInstruction(instruction);
+    } else {
+      throw Error("Cannot append instruction to null current action");
+    }
   }
 
   /**
