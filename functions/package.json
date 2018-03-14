@@ -10,13 +10,15 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "tap test/unit/*.js"
+    "test": "tap test/unit/*.js && tap test/integration/*.js"
   },
   "dependencies": {
     "actions-on-google": "^1.0.0",
     "ajv": "^6.2.0",
     "firebase-admin": "~5.8.1",
     "firebase-functions": "^0.8.1",
+    "request": "^2.85.0",
+    "request-promise": "^4.2.2",
     "scratch-vm": "github:quachtina96/scratch-vm#scratchvui"
   },
   "devDependencies": {
