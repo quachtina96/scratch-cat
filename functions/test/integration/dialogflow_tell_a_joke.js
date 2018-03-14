@@ -7,7 +7,7 @@ const test = require('tap').test;
 const sc = require('../../index.js');
 var request = require('request-promise');
 var AUTHORIZATION = 'Bearer 55710394e3734fd28627df645c57d3f3';
-var SESSION_ID = 'tina_test2';
+var SESSION_ID = 'tina-t';
 
 var getRequestUrl = function(query) {
   return 'https://api.dialogflow.com/v1/query?v=20170712&query=' + encodeURIComponent(query) + '&lang=en&sessionId=' + SESSION_ID + '&timezone=America/New_York'
@@ -51,7 +51,22 @@ var handleError = function (err) {
   console.log(err);
 };
 
-test('hi', t => {
+
+/**
+hi
+Hi, I'm Scratch. You can create a program by telling me what to do.
+can you tell me a joke?
+I don't know how to do that. Can you teach me what I should when you say 'tell me a joke'?
+sure
+What should I do first?
+first, say knock knock
+What should I do next?
+then, say who's there?
+Okay, doing say who's there next.
+then, say King Tut
+Okay, doing say King Tut next.
+**/
+test('flow 1', t => {
   // Build request
   var options = getRequest('hi', AUTHORIZATION);
   return request(options).then(function (parsedBody) {
@@ -76,7 +91,35 @@ test('hi', t => {
           return t;
         });
     }).then(t => {
+      var options = getRequest("first, say knock knock", AUTHORIZATION);
+      return request(options)
+        .then(function (parsedBody) {
+          t.same(parsedBody.result.action, "define_program");
+          t.same(parsedBody.result.fulfillment.speech, "When you say tell me a joke, I'll first, say knock knock. What should I do next?");
+          return t;
+        });
+    }).then(t => {
+      var options = getRequest("then, say who's there?", AUTHORIZATION);
+      return request(options)
+        .then(function (parsedBody) {
+          t.same(parsedBody.result.contexts[0].name, "add_to_program");
+          // TODO: improve the speech below with fulfillment
+          t.same(parsedBody.result.fulfillment.speech, "Okay, I will say who's there next.");
+          return t;
+        });
+    }).then(t => {
+      var options = getRequest("then, say King Tut", AUTHORIZATION);
+      return request(options)
+        .then(function (parsedBody) {
+          console.log(parsedBody);
+          t.same(parsedBody.result.metadata.intentName, "add_to_program_again");
+          // TODO: improve the speech below with fulfillment
+          t.same(parsedBody.result.fulfillment.speech, "Okay, I will say King Tut next.");
+          return t;
+        });
+    }).then(t => {
       t.end();
     }).catch(handleError);
 });
+
 
