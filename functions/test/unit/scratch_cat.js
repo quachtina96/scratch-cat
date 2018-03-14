@@ -1,5 +1,8 @@
 const test = require('tap').test;
 const sc = require('../../index.js');
+const ScratchCatModel = require('../../scratch_cat_model.js');
+const ScratchCatAction = require('../../scratch_cat_action.js');
+const ScratchCatInstruction = require('../../scratch_cat_instruction.js');
 
 class mockDialogFlowApp {
 	constructor() {
@@ -37,12 +40,10 @@ class mockDialogFlowApp {
     this.speechOutput.push('tell', whatToSay);
 	}
 
+  // Needs to be able to get arguments from within a context?
 	getArgument(argName) {
     return this.args[argName];
 	}
-
-	// this.app.response_.status(200).send(response);
-  // IDEA:
 }
 
 test('run executes action matching the known intent', t => {
@@ -70,12 +71,12 @@ test('run catches error when action fails.', t => {
   // Instead of passing a request and response, we pass null values;
   var scratch = new sc.ScratchCat(null, null, app);
   let output = scratch.run();
-  let expected = `TypeError: map[action] is not a function\nScratchCat failed on action: Nonexistent Intent\nScratchCat looks like{"app":{"speechOutput":[],"mockIntent":"Nonexistent Intent","args":{}},"model":{"actions":{},"currentProgram":[]}}`
+  let expected = `TypeError: map[action] is not a function\nScratchCat failed on action: Nonexistent Intent\nScratchCat looks like{"app":{"speechOutput":[],"mockIntent":"Nonexistent Intent","args":{}},"model":{"actions":{},"currentProgram":[],"currentAction":null}}`
   t.same(output, expected);
   t.end();
 });
 
-test('DiSCOVER_ABILITY prompts for action', t => {
+test('DISCOVER_ABILITY prompts for action', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DISCOVER_ABILITY);
   // Instead of passing a request and response, we pass null values;
@@ -85,7 +86,7 @@ test('DiSCOVER_ABILITY prompts for action', t => {
   t.end();
 });
 
-test('DiSCOVER_ABILITY with known action', t => {
+test('DISCOVER_ABILITY with known action', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DISCOVER_ABILITY);
   app.setArgument('command', 'tell me a joke');
@@ -103,7 +104,7 @@ test('DiSCOVER_ABILITY with known action', t => {
   t.end();
 });
 
-test('DiSCOVER_ABILITY asks user to teach unknown action', t => {
+test('DISCOVER_ABILITY asks user to teach unknown action', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DISCOVER_ABILITY);
   app.setArgument('command', 'tell me a joke');
@@ -113,5 +114,32 @@ test('DiSCOVER_ABILITY asks user to teach unknown action', t => {
   t.same(app.speechOutput, ["ask", "I don't know how to tell you a joke. Can you teach me?"]);
   t.end();
 });
+
+test('DEFINE_PROGRAM modifies model and asks for next step', t => {
+  var app = new mockDialogFlowApp();
+  app.setIntent_(sc.Actions.DEFINE_PROGRAM);
+  app.setArgument('action', 'tell me a joke');
+  app.setArgument('instruction', 'first, say knock knock.');
+  // Instead of passing a request and response, we pass null values;
+  var scratch = new sc.ScratchCat(null, null, app);
+  scratch.run();
+  t.ok(scratch.model.hasAbilityTo('tell me a joke'));
+  t.equals(scratch.model.actions['tell me a joke'].raw, 'first, say knock knock.');
+  t.same(app.speechOutput, ["ask", "Okay, what's the next step?"]);
+  t.end();
+});
+
+test('DEFINE_PROGRAM notifies user of lack of input', t => {
+  var app = new mockDialogFlowApp();
+  app.setIntent_(sc.Actions.DEFINE_PROGRAM);
+  app.setArgument('action', 'tell me a joke');
+  app.setArgument('instruction', null);
+  // Instead of passing a request and response, we pass null values;
+  var scratch = new sc.ScratchCat(null, null, app);
+  scratch.run();
+  t.same(app.speechOutput, ["tell", "I didn't get that."]);
+  t.end();
+});
+
 
 
