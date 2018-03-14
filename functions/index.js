@@ -5,6 +5,7 @@ const App = require('actions-on-google').DialogflowApp;
 const functions = require('firebase-functions');
 const ScratchCatModel = require('./scratch_cat_model.js');
 
+
 /** Dialogflow Actions {@link https://dialogflow.com/docs/actions-and-parameters#actions} */
 const Actions = {
   DISCOVER_ABILITY: 'discover_ability',
@@ -17,6 +18,7 @@ const Actions = {
   DEFINE_PROGRAM_FROM_ABILITY: 'discover_ability.discover_ability-yes.discover_ability-yes-yes',
   ADD_TO_PROGRAM: 'add_to_program', //?
   EDIT_PROGRAM: 'edit_program', //?
+  ASK_TO_TEACH: 'ask_to_teach',
 };
 
 /**
@@ -128,8 +130,19 @@ class ScratchCat {
       }
     }
     else {
+      // Prompt user to provide some sort of actionable input.
       this.app.tell("Sorry, what would you like me to do?");
     }
+  }
+
+
+  [Actions.AGREE]() {
+    // Determine what context we're in.
+    var contexts = this.app.getContexts();
+
+    // Pull command from context.
+    //
+    var instruction = this.app.getArgument('command');
   }
 
   // followup intent to call_command_yes;
@@ -143,12 +156,24 @@ class ScratchCat {
     return this.app.response_.status(200).send(response);
     }
 
+  // TODO(quacht): unit test this.
   [Actions.DEFINE_PROGRAM]() {
-    var action = this.app.getArgument('#call_command.command');
-    var instruction = this.app.getArgument('command');
-    var event = this.app.getArgument('event');
-    this.model.addAction(action, this.model.getStep(instruction, event));
-    this.app.ask("What's the next step?");
+    var action = this.app.getArgument('action');
+    var instruction = this.app.getArgument('instruction');
+
+    if (instruction) {
+      try {
+        this.model.addAction(action, instruction);
+        this.app.ask("Okay, what's the next step?");
+      } catch(e) {
+        console.log(e);
+        this.app.ask("I didn't understand. Can you teach me what I should do when you say '" + instruction + "'?");
+      }
+    }
+    else {
+      // Prompt user to provide some sort of actionable input.
+      this.app.tell("I didn't get that.");
+    }
   }
 
   [Actions.ADD_TO_PROGRAM]() {

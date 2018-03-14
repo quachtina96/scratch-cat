@@ -4,6 +4,7 @@
  */
 'use strict';
 const ScratchCatAction = require('./scratch_cat_action.js');
+const ScratchCatInstruction = require('./scratch_cat_instruction.js');
 
 
 class ScratchCatModel {
