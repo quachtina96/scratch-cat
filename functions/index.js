@@ -178,10 +178,11 @@ class ScratchCat {
 
   [Actions.ADD_TO_PROGRAM]() {
     // TODO: set the correct context.
-    var action = this.app.getArgument('CONTEXT_HERE.command');
-    var instruction = this.app.getArgument('command');
-    var event = this.app.getArgument('event');
-    this.model.appendStep(action, this.model.getStep(instruction, event));
+    var action = this.app.getArgument('action');
+    var instruction = this.app.getArgument('instruction');
+    this.model.appendInstructionTo(action, instruction);
+    var message = "Okay, I will " + instruction + " next.";
+    this.app.tell(message);
   }
 
   /**
