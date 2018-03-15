@@ -141,5 +141,37 @@ test('DEFINE_PROGRAM notifies user of lack of input', t => {
   t.end();
 });
 
+test('ADD_TO_PROGRAM modifies Scratch Cat model', t => {
+  // Set up the program.
+  var getPromise = function() {
+      return new Promise(function(resolved, rejected) {
+        var app = new mockDialogFlowApp();
+        app.setIntent_(sc.Actions.DEFINE_PROGRAM);
+        app.setArgument('action', 'tell me a joke');
+        app.setArgument('instruction', 'say knock knock');
+        // Instead of passing a request and response, we pass null values;
+        var scratch = new sc.ScratchCat(null, null, app);
+        scratch.run()
+        resolved(scratch);
+      });
+  };
+
+  // Add to the program.
+  getPromise().then(scratch => {
+    scratch.app.setIntent_(sc.Actions.ADD_TO_PROGRAM);
+    scratch.app.setArgument('action', 'tell me a joke');
+    scratch.app.setArgument('instruction', 'say who is there');
+    return scratch;
+  }).then(scratch => {
+    scratch.run();
+    t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['say knock knock']);
+    t.same(scratch.model.actions['tell me a joke'].getScratchProgram(), [['whenGreenFlag'],['say:', 'knock knock']]);
+    t.end();
+  });
+});
+
+// TODO: enable the test of correct speech output for ADD_TO_PROGRAM
+// t.same(scratch.app.speechOutput, ['tell', 'Okay, I will say who is there next.']);
+
 
 
