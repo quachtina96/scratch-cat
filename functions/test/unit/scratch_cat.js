@@ -46,6 +46,11 @@ class mockDialogFlowApp {
 	}
 }
 
+var handleError = function (err) {
+  console.log('FAILED');
+  console.log(err);
+};
+
 test('run executes action matching the known intent', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DISCOVER_ABILITY);
@@ -151,7 +156,7 @@ test('ADD_TO_PROGRAM modifies Scratch Cat model', t => {
         app.setArgument('instruction', 'say knock knock');
         // Instead of passing a request and response, we pass null values;
         var scratch = new sc.ScratchCat(null, null, app);
-        scratch.run()
+        scratch.run();
         resolved(scratch);
       });
   };
@@ -167,7 +172,8 @@ test('ADD_TO_PROGRAM modifies Scratch Cat model', t => {
     t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['say knock knock']);
     t.same(scratch.model.actions['tell me a joke'].getScratchProgram(), [['whenGreenFlag'],['say:', 'knock knock']]);
     t.end();
-  });
+    return t;
+  }).catch(handleError);
 });
 
 // TODO: enable the test of correct speech output for ADD_TO_PROGRAM
