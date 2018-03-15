@@ -95,7 +95,7 @@ test('flow 1', t => {
       return request(options)
         .then(parsedBody => {
           t.same(parsedBody.result.action, "define_program");
-          t.same(parsedBody.result.fulfillment.speech, "When you say tell me a joke, I'll first, say knock knock. What should I do next?");
+          t.same(parsedBody.result.fulfillment.speech, "When you say 'tell me a joke', I'll first, say knock knock. What should I do next?");
           return t;
         });
     }).then(t => {
@@ -163,7 +163,7 @@ test('flow 2', t => {
       return request(options)
         .then(parsedBody => {
           t.same(parsedBody.result.action, "define_program");
-          t.same(parsedBody.result.fulfillment.speech, "When you say tell me a joke, I'll first, say knock knock. What should I do next?");
+          t.same(parsedBody.result.fulfillment.speech, "When you say 'tell me a joke', I'll first, say knock knock. What should I do next?");
           return t;
         });
     }).then(t => {
