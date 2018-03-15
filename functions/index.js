@@ -164,6 +164,7 @@ class ScratchCat {
     if (instruction) {
       try {
         this.model.addAction(action, instruction);
+        // When you say $action, I'll $instruction.
         this.app.ask("Okay, what's the next step?");
       } catch(e) {
         console.log(e);
