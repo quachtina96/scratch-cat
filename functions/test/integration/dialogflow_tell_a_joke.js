@@ -208,7 +208,7 @@ test('flow 3', t => {
       var options = getRequest("no", AUTHORIZATION);
       return request(options)
         .then(parsedBody => {
-          t.same(parsedBody.result.fulfillment.speech, "Okay");
+          t.same(parsedBody.result.fulfillment.speech, "Okay, but if you teach me I will know what to do when you say tell me a joke.");
           t.end();
           return t;
         });

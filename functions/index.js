@@ -165,7 +165,7 @@ class ScratchCat {
       try {
         this.model.addAction(action, instruction);
         // When you say $action, I'll $instruction.
-        this.app.ask("Okay, what's the next step?");
+        this.app.ask("When you say '" + action + "', I'll " + instruction + ". What should I do next?");
       } catch(e) {
         console.log(e);
         this.app.ask("I didn't understand. Can you teach me what I should do when you say '" + instruction + "'?");

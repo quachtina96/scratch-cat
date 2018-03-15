@@ -119,13 +119,13 @@ test('DEFINE_PROGRAM modifies model and asks for next step', t => {
   var app = new mockDialogFlowApp();
   app.setIntent_(sc.Actions.DEFINE_PROGRAM);
   app.setArgument('action', 'tell me a joke');
-  app.setArgument('instruction', 'first, say knock knock.');
+  app.setArgument('instruction', 'first, say knock knock');
   // Instead of passing a request and response, we pass null values;
   var scratch = new sc.ScratchCat(null, null, app);
   scratch.run();
   t.ok(scratch.model.hasAbilityTo('tell me a joke'));
-  t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['first, say knock knock.']);
-  t.same(app.speechOutput, ["ask", "Okay, what's the next step?"]);
+  t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['first, say knock knock']);
+  t.same(app.speechOutput, ["ask", "When you say 'tell me a joke', I'll first, say knock knock. What should I do next?"]);
   t.end();
 });
 
