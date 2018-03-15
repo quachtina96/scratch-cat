@@ -55,7 +55,7 @@ class ScratchCatModel {
    * @param {!Object} instruction The next instruction
    **/
   appendInstructionTo(action, instruction) {
-    if (actions in this.actions) {
+    if (action in this.actions) {
       this.actions[action].appendInstruction(instruction);
     } else {
       throw Error("Cannot append instruction to action that does not exist");
