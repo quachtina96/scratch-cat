@@ -32,19 +32,33 @@ class ScratchCatModel {
    * @param {!String} instruction The first instruction
    **/
   addAction(actionName, instruction) {
-    this.actions[actionName] = new ScratchCatInstruction(instruction);
+    let instructions = [new ScratchCatInstruction(instruction)];
+    this.actions[actionName] = new ScratchCatAction(actionName, instructions);
+    this.currentAction = this.actions[actionName];
   }
 
   /**
    * Adds step to program associated with existing ability.
-   * @param {!String} actionName Name of the action
-   * @param {!Object} step The new step
+   * @param {!Object} instruction The next instruction
    **/
   appendInstruction(instruction) {
     if (this.currentAction) {
       this.currentAction.appendInstruction(instruction);
     } else {
       throw Error("Cannot append instruction to null current action");
+    }
+  }
+
+  /**
+   * Adds step to program associated with existing ability.
+   * @param {!String} actionName Name of the action
+   * @param {!Object} instruction The next instruction
+   **/
+  appendInstructionTo(action, instruction) {
+    if (actions in this.actions) {
+      this.actions[action].appendInstruction(instruction);
+    } else {
+      throw Error("Cannot append instruction to action that does not exist");
     }
   }
 
