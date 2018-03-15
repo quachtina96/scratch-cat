@@ -111,7 +111,6 @@ test('flow 1', t => {
       var options = getRequest("then, say King Tut", AUTHORIZATION);
       return request(options)
         .then(function (parsedBody) {
-          console.log(parsedBody);
           t.same(parsedBody.result.metadata.intentName, "add_to_program_again");
           // TODO: improve the speech below with fulfillment
           t.same(parsedBody.result.fulfillment.speech, "Okay, I will say King Tut next.");

@@ -124,7 +124,7 @@ test('DEFINE_PROGRAM modifies model and asks for next step', t => {
   var scratch = new sc.ScratchCat(null, null, app);
   scratch.run();
   t.ok(scratch.model.hasAbilityTo('tell me a joke'));
-  t.equals(scratch.model.actions['tell me a joke'].raw, 'first, say knock knock.');
+  t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['first, say knock knock.']);
   t.same(app.speechOutput, ["ask", "Okay, what's the next step?"]);
   t.end();
 });
