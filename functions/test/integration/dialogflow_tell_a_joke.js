@@ -227,4 +227,30 @@ What should I do next?
 when I say who's there, you say King Tut
 Okay, I will say King Tut when you say who's there // add_to_program_fulfillment
 **/
+test('flow 3', t => {
+  // Build request
+  var options = getRequest('hi', AUTHORIZATION);
+  return request(options).then(parsedBody => {
+      t.same(parsedBody.result.fulfillment.speech,
+        "Hi, I'm Scratch. You can create a program by telling me what to do.");
+      return t;
+    }).then(t => {
+      var options = getRequest("tell me a joke", AUTHORIZATION);
+      return request(options)
+        .then(parsedBody => {
+          t.same(parsedBody.result.fulfillment.speech,
+            "I don't know how to do that. Can you teach me what I should when you say 'tell me a joke'?");
+          t.same(getSortedContexts(parsedBody), ["_actions_on_google_", 'call_command']);
+          return t;
+        });
+    }).then(t => {
+      var options = getRequest("no", AUTHORIZATION);
+      return request(options)
+        .then(parsedBody => {
+          t.same(parsedBody.result.fulfillment.speech, "Okay, but if you teach me I will know what to do when you say tell me a joke.");
+          t.end();
+          return t;
+        });
+    }).catch(handleError);
+});
 
