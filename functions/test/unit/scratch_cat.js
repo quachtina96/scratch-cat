@@ -169,15 +169,46 @@ test('ADD_TO_PROGRAM modifies Scratch Cat model', t => {
     return scratch;
   }).then(scratch => {
     scratch.run();
-    t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['say knock knock']);
-    t.same(scratch.model.actions['tell me a joke'].getScratchProgram(), [['whenGreenFlag'],['say:', 'knock knock']]);
+    t.same(scratch.model.actions['tell me a joke'].getInstructions(true), ['say knock knock', 'say who is there']);
+    t.same(scratch.model.actions['tell me a joke'].getScratchProgram(), [['whenGreenFlag'],['say:', 'knock knock'], ['say:', 'who is there']]);
     t.end();
-    return t;
+    return scratch;
   }).catch(handleError);
 });
 
 // TODO: enable the test of correct speech output for ADD_TO_PROGRAM
-// t.same(scratch.app.speechOutput, ['tell', 'Okay, I will say who is there next.']);
+test('ADD_TO_PROGRAM provides correct output', t => {
+  // Set up the program.
+  var getPromise = function() {
+      return new Promise(function(resolved, rejected) {
+        var app = new mockDialogFlowApp();
+        app.setIntent_(sc.Actions.DEFINE_PROGRAM);
+        app.setArgument('action', 'tell me a joke');
+        app.setArgument('instruction', 'say knock knock');
+        // Instead of passing a request and response, we pass null values;
+        var scratch = new sc.ScratchCat(null, null, app);
+        scratch.run();
+        resolved(scratch);
+      });
+  };
+
+  // Add to the program.
+  getPromise().then(scratch => {
+    scratch.app.setIntent_(sc.Actions.ADD_TO_PROGRAM);
+    scratch.app.setArgument('action', 'tell me a joke');
+    scratch.app.setArgument('instruction', 'say who is there');
+    scratch.run();
+    return scratch;
+  }).then(scratch => {
+    t.same(scratch.app.speechOutput, [ 'ask',
+     'When you say \'tell me a joke\', I\'ll say knock knock. What should I do next?',
+     'tell',
+     'Okay, I will say who is there next.' ]);
+    t.end();
+    return scratch;
+  }).catch(handleError);
+});
+
 
 
 
