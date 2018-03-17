@@ -13,11 +13,13 @@ class ScratchCatAction {
   /**
    * @constructor
    * @param {!String} name - The name of the action
+   * @param {!ScratchCatModel} model - the ScratchCatModel that owns this action.
    * @param {Array<ScratchCatInstruction>} opt_instructions
    */
-  constructor(name, opt_instructions) {
+  constructor(name, model, opt_instructions,) {
     this.name = name;
     this.instructions = opt_instructions ? opt_instructions : [];
+    this.model = model;
   }
 
   /**
@@ -44,11 +46,14 @@ class ScratchCatAction {
 
   /**
    * Adds step to program associated with existing ability.
-   * @param {!String} actionName Name of the action
+   * @param {!String} instruction The instruction
    * @param {!Object} step The new step
    **/
   appendInstruction(instruction) {
-    let newInstruction = new ScratchCatInstruction(instruction);
+    if (ScratchCatInstruction.getUnsupportedSteps(instruction).length != 0) {
+      throw new Error("Cannot append instruction to action using unsupported steps");
+    }
+    let newInstruction = new ScratchCatInstruction(instruction, this);
     this.instructions.push(newInstruction);
   }
 

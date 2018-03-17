@@ -22,27 +22,32 @@ test('getInstructions in English', t => {
   t.end();
 });
 
-test('appendInstruction', t => {
-  // Define an action with one instruction.
-  let instructions = [{
-    'raw': 'cmd arg 1. then cmd1 arg1',
-    'steps': [["cmd", "arg"],[ "cmd1", "arg1"]]
-  }];
-  var action1 = new ScratchCatAction('action1', instructions);
-  t.ok(action1.instructions.length, 1);
+test('appendInstruction with unsupported steps', t => {
+  var action1 = new ScratchCatAction('action1');
 
   // Add a new instruction.
-  let newInstruction = "Say hello"
-  action1.appendInstruction(newInstruction);
+  t.throws(function() {
+    action1.appendInstruction('cmd arg 1. then cmd1 arg1')
+  });
 
   // There should be two instructions.
-  t.ok(action1.instructions.length, 2)
-  t.same(action1.instructions, [{
-    'raw': 'cmd arg 1. then cmd1 arg1',
-    'steps': [["cmd", "arg"],[ "cmd1", "arg1"]]
-  }, {
-    'raw': 'Say hello',
-    'steps': [["say:", "hello"]]
-  }]);
+  t.equals(action1.instructions.length, 0)
+
+  t.end();
+});
+
+test('appendInstruction with supported steps', t => {
+  // Define an action with one instruction.
+  var action1 = new ScratchCatAction('action1');
+
+  // Add a new instruction.
+  action1.appendInstruction('Say hello');
+
+  // There should be one instruction.
+  t.ok(action1.instructions.length, 1)
+
+  t.same(action1.instructions[0].raw, 'Say hello');
+  t.same(action1.instructions[0].steps, [["say:", "hello"]]);
+
   t.end();
 });
