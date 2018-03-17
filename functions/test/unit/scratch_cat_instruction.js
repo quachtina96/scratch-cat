@@ -34,87 +34,89 @@ var arraysEqual = function(array1, array2) {
 // TODO: correct test
 test('extractArgs_ ""', t => {
     var scratch = new Instruction("");
-    let parsed = scratch.extractArgs_("");
+    let parsed = Instruction.extractArgs("");
     t.same(parsed, {"original": ""});
-	t.end();
+  t.end();
 });
 
 test('extractArgs_ "when EVENT, you CMD"', t => {
-	let instruction = "when i say knock knock, you say who's there";
-	var scratch = new Instruction(instruction);
-    var jsonInfo = scratch.extractArgs_(instruction);
-	t.same(jsonInfo, {
-		original: "when i say knock knock, you say who's there",
-		event: "i say knock knock",
-		command: "say who's there"
-	});
-	t.end();
+  let instruction = "when i say knock knock, you say who's there";
+  var jsonInfo = Instruction.extractArgs(instruction);
+  t.same(jsonInfo, {
+    original: "when i say knock knock, you say who's there",
+    event: "i say knock knock",
+    command: "say who's there"
+  });
+  t.end();
 });
 
 test('extractArgs_ "when EVENT, CMD"', t => {
-	let instruction = "when i say knock knock, say who's there";
-	var scratch = new Instruction(instruction);
-    var jsonInfo = scratch.extractArgs_(instruction);
-	t.same(jsonInfo, {
-		original: "when i say knock knock, say who's there",
-		event: "i say knock knock",
-		command: "say who's there"
-	});
-	t.end();
+  let instruction = "when i say knock knock, say who's there";
+  var jsonInfo = Instruction.extractArgs(instruction);
+  t.same(jsonInfo, {
+    original: "when i say knock knock, say who's there",
+    event: "i say knock knock",
+    command: "say who's there"
+  });
+  t.end();
 });
 
 test('extractArgs_ identifies "CMD" structure', t => {
-	let instruction = "say who's there";
-	var scratch = new Instruction(instruction);
-    var jsonInfo = scratch.extractArgs_(instruction);
+  let instruction = "say who's there";
+  var jsonInfo = Instruction.extractArgs(instruction);
     t.same(jsonInfo.command, instruction);
-	t.end();
+  t.end();
 });
 
 test('extractArgs_ "then/next/after, CMD"', t => {
-	let instruction = "then, say who's there";
-	var scratch = new Instruction(instruction);
-    var jsonInfo = scratch.extractArgs_(instruction);
-	t.same(jsonInfo, {
-		original: instruction,
-		event: "after last command",
-		command: "say who's there"
-	});
-	t.end();
+  let instruction = "then, say who's there";
+  var jsonInfo = Instruction.extractArgs(instruction);
+  t.same(jsonInfo, {
+    original: instruction,
+    event: "after last command",
+    command: "say who's there"
+  });
+  t.end();
 });
 
 test('extractArgs_ "first, CMD"', t => {
-	let instruction = "first, say who's there";
-	var scratch = new Instruction(instruction);
-    var jsonInfo = scratch.extractArgs_(instruction);
-	t.same(jsonInfo, {
-		original: instruction,
-		event: "first",
-		command: "say who's there"
-	});
-	t.end();
+  let instruction = "first, say who's there";
+  var jsonInfo = Instruction.extractArgs(instruction);
+  t.same(jsonInfo, {
+    original: instruction,
+    event: "first",
+    command: "say who's there"
+  });
+  t.end();
 });
 
 test('getSteps works with single instruction', t => {
-	let instruction = 'say King Tut-key fried chicken!';
-	var scratch = new Instruction(instruction);
-	var step = scratch.getSteps(instruction);
-	t.same(step, [['say:', 'King Tut-key fried chicken!']]);
-	t.end();
+  let instruction = 'say King Tut-key fried chicken!';
+  var scratch = new Instruction(instruction);
+  var step = scratch.getSteps();
+  t.same(step, [['say:', 'King Tut-key fried chicken!']]);
+  t.end();
 });
 
 test('getSteps works with single instruction with event', t => {
-	let instruction = "when I say knock knock, say who's there?";
-	var scratch = new Instruction(instruction);
-	let step = scratch.getSteps(instruction);
-	arraysEqual(step, [["doAsk", ""],["doIf", ["=", ["answer"], "knock knock"], [["say:", "who's there?"]]]]);
-	t.end();
+  let instruction = "when I say knock knock, say who's there?";
+  var scratch = new Instruction(instruction);
+  let step = scratch.getSteps();
+  arraysEqual(step, [["doAsk", ""],["doIf", ["=", ["answer"], "knock knock"], [["say:", "who's there?"]]]]);
+  t.end();
 });
 
 test('getSteps works with multiple instructions in single utterance', t => {
-	let instruction = "First, say knock knock. Then, when I say who's there, you say King Tut";
-	var scratch = new Instruction(instruction);
-	let step = scratch.getSteps(instruction);
-	arraysEqual(step, [["say:", "knock knock"],["doAsk", ""],["doIf", ["=", ["answer"], "who's there"], [["say:", "King Tut"]]]]);
-	t.end();
+  let instruction = "First, say knock knock. Then, when I say who's there, you say King Tut";
+  var scratch = new Instruction(instruction);
+  let step = scratch.getSteps();
+  arraysEqual(step, [["say:", "knock knock"],["doAsk", ""],["doIf", ["=", ["answer"], "who's there"], [["say:", "King Tut"]]]]);
+  t.end();
+});
+
+test('getUnsupportedSteps returns only unsupported steps', t => {
+  t.same(Instruction.getUnsupportedSteps('repeat tell me a joke'), ['repeat tell me a joke']);
+  t.same(Instruction.getUnsupportedSteps('repeat fart!'), ['repeat fart!']);
+  t.same(Instruction.getUnsupportedSteps('say fart'), []);
+  t.end();
 });
