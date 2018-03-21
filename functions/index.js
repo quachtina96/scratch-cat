@@ -8,17 +8,11 @@ const ScratchCatModel = require('./scratch_cat_model.js');
 
 /** Dialogflow Actions {@link https://dialogflow.com/docs/actions-and-parameters#actions} */
 const Actions = {
-  DISCOVER_ABILITY: 'discover_ability',
-  TEACH_COMMAND: 'discover_ability.discover_ability-yes',
-  CONFIRM_COMMMAND: 'confirm_command', //?
-  CORRECT_COMMMAND: 'correct_command', //?
   CALL_COMMAND: 'call_command',
-  CALL_COMMAND_YES: 'call_command.call_command-yes',
   DEFINE_PROGRAM: 'define_program',
-  DEFINE_PROGRAM_FROM_ABILITY: 'discover_ability.discover_ability-yes.discover_ability-yes-yes',
   ADD_TO_PROGRAM: 'add_to_program', //?
   EDIT_PROGRAM: 'edit_program', //?
-  ASK_TO_TEACH: 'ask_to_teach',
+  CORRECT_COMMMAND: 'correct_command',
 };
 
 /**
@@ -34,6 +28,10 @@ class ScratchCat {
   constructor (request, response, opt_app) {
     this.app = opt_app ? opt_app : new App({request: request, response: response});
     this.model = new ScratchCatModel();
+    // Maintain a stack of calls.
+    this.stack = [];
+    // Maintain a queue of undefined actions.
+    this.undefinedActions = [];
   }
 
   /**
@@ -68,27 +66,6 @@ class ScratchCat {
     return this.app.response_.status(200).send(response);
   }
 
-  [Actions.DISCOVER_ABILITY]() {
-    // TODO: provide the correct parameter
-    var action = this.app.getArgument('command');
-    if (!action) {
-      this.app.tell("You can teach me by telling me what to do.");
-      return;
-    }
-    // replace instances of 'me' with 'you' in the action.
-    if (this.model.hasAbilityTo(action)) {
-      action = action.replace(/me/i, 'you');
-      this.app.tell("I can " + action);
-    } else {
-      action = action.replace(/me/i, 'you');
-      this.app.ask("I don't know how to " + action + ". Can you teach me?");
-    }
-  }
-
-  [Actions.DEFINE_PROGRAM_FROM_ABILITY]() {
-    this.triggerEvent_(this.app, 'discover_unknown_ability');
-  }
-
   /**
    * When a user has agreed to teach a command to Scratch and has said a step,
    * Scratch will ask if the instruction is correct.
@@ -102,18 +79,7 @@ class ScratchCat {
 
   /**
    * When a user confirms that the instruction is correct, Scratch will save the
-   * command into its definition of the program. As a result, the teachCommand's
-   * context should be passed to the confirm command intention  (which should
-   * follow the teachCommand.
-   */
-  [Actions.CONFIRM_COMMMAND]() {
-  }
-
-  /**
-   * When a user confirms that the instruction is correct, Scratch will save the
-   * command into its definition of the program. As a result, the teachCommand's
-   * context should be passed to the confirm command intention  (which should
-   * follow the teachCommand.
+   * command into its definition of the program.
    */
   [Actions.CORRECT_COMMMAND]() {
   }
@@ -135,45 +101,58 @@ class ScratchCat {
     }
   }
 
-
+  /**
+   * This action gets utilized any time someone follows up with 'Yes.'
+   */
   [Actions.AGREE]() {
     // Determine what context we're in.
     var contexts = this.app.getContexts();
 
     // Pull command from context.
-    //
     var instruction = this.app.getArgument('command');
+
+    // IF statements based on context will determine what action we take.
   }
 
-  // followup intent to call_command_yes;
-  [Actions.CALL_COMMAND_YES]() {
-    const response = {
-        followupEvent: {
-            name: "call_command_unknown",
-        }
-      }
-    // TODO: do i need to pass this command to the define program context then?
-    return this.app.response_.status(200).send(response);
-    }
-
-  // TODO(quacht): unit test this.
   [Actions.DEFINE_PROGRAM]() {
     var action = this.app.getArgument('action');
     var instruction = this.app.getArgument('instruction');
+    try {
+      // This whole undefined action flow is interesting. What if you waited til
+      // the user finished defining the action? You would have a queue of
+      // instructions that don't generate valid Scratch programs and the user
+      // would be bombarded with requests.
+      var undefinedActions = this.model.getUndefinedActions(instruction);
+      if (undefinedActions.length) {
+        // Maintain the current attempt to define the program?
+        this.stack.push({
+          'define_program' : {
+            'action': action,
+            'instruction': instruction
+          }
+        });
 
-    if (instruction) {
-      try {
-        this.model.addAction(action, instruction);
-        // When you say $action, I'll $instruction.
-        this.app.ask("When you say '" + action + "', I'll " + instruction + ". What should I do next?");
-      } catch(e) {
-        console.log(e);
-        this.app.ask("I didn't understand. Can you teach me what I should do when you say '" + instruction + "'?");
+        // TODO: determine whether the list of undefined actions would be too long.
+        this.app.ask("I don't know how to " + undefinedActions.join(" ") +
+          ". Can you teach me what to do when you say " + undefinedActions[0]);
+
+        // var dataMap = {
+        //     'action': instruction,
+        //     // TODO: What happens when I don't provide the instruction?
+        // }
+        // this.triggerEvent_(Actions.DEFINE_PROGRAM, dataMap)
       }
-    }
-    else {
-      // Prompt user to provide some sort of actionable input.
-      this.app.tell("I didn't get that.");
+
+      console.log('in define program:')
+      console.dir(action);
+      console.dir(instruction)
+      this.model.addAction(action, instruction);
+      console.dir(model);
+      // Remove punctuation from instruction.
+      let instructionText = instruction.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+      this.app.ask("When you say '" + action + "', I'll " + instructionText.toLowerCase() + ". What should I do next?");
+    } catch (e) {
+      this.app.ask("I didn't understand. Can you teach me what I should do when you say '" + instruction + "'?");
     }
   }
 

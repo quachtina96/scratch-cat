@@ -21,6 +21,16 @@ class ScratchCatModel {
     return Object.keys(this.actions);
   }
 
+  getUndefinedActions(instruction) {
+    // TODO: Add a way to parse these sentences for actual verbs. This could be
+    // using a library to do part of speech tagging, or to build a tree
+    // representing the sentence.
+    if (!instruction) {
+      throw new Error("Cannot get undefined actions from null instruction.")
+    }
+    return ScratchCatInstruction.getUnsupportedSteps(instruction);
+  }
+
   hasAbilityTo(action) {
     return action in this.actions;
   }
@@ -32,8 +42,9 @@ class ScratchCatModel {
    * @param {!String} instruction The first instruction
    **/
   addAction(actionName, instruction) {
-    let instructions = [new ScratchCatInstruction(instruction)];
-    this.actions[actionName] = new ScratchCatAction(actionName, instructions);
+    this.actions[actionName] = new ScratchCatAction(actionName);
+    this.actions[actionName].appendInstruction(
+        new ScratchCatInstruction(instruction, this.actions[actionName]));
     this.currentAction = this.actions[actionName];
   }
 
