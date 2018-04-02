@@ -10,8 +10,8 @@ const ScratchCatModel = require('./scratch_cat_model.js');
 const Actions = {
   CALL_COMMAND: 'call_command',
   DEFINE_PROGRAM: 'define_program',
-  ADD_TO_PROGRAM: 'add_to_program', //?
-  EDIT_PROGRAM: 'edit_program', //?
+  ADD_TO_PROGRAM: 'add_to_program',
+  EDIT_PROGRAM: 'edit_program',
   CORRECT_COMMMAND: 'correct_command',
 };
 
@@ -55,6 +55,11 @@ class ScratchCat {
     }
   }
 
+  /**
+   * Trigger an event in order to trigger all associated intents.
+   * @param {!String} eventName - the name of the event
+   * @param {Object} opt_dataMap - data to pass to associated intents
+   */
   triggerEvent_(eventName, opt_dataMap) {
     var dataMap = opt_dataMap ? opt_dataMap : {}
     const response = {
@@ -82,8 +87,13 @@ class ScratchCat {
    * command into its definition of the program.
    */
   [Actions.CORRECT_COMMMAND]() {
+    // TODO: implement
   }
 
+  /**
+   * If command is known, execute it. Otherwise, ask the user to teach how to
+   * execute the command.
+   */
   [Actions.CALL_COMMAND]() {
     var instruction = this.app.getArgument('command');
     if (instruction) {
@@ -114,9 +124,16 @@ class ScratchCat {
     // IF statements based on context will determine what action we take.
   }
 
+  /**
+   * Execute workflow for user to start defining a program associated with an
+   * action.
+   */
   [Actions.DEFINE_PROGRAM]() {
+    // The action the program will be saved under.
     var action = this.app.getArgument('action');
+    // The first step in the program.
     var instruction = this.app.getArgument('instruction');
+
     try {
       // This whole undefined action flow is interesting. What if you waited til
       // the user finished defining the action? You would have a queue of
@@ -143,11 +160,7 @@ class ScratchCat {
         // this.triggerEvent_(Actions.DEFINE_PROGRAM, dataMap)
       }
 
-      console.log('in define program:')
-      console.dir(action);
-      console.dir(instruction)
       this.model.addAction(action, instruction);
-      console.dir(model);
       // Remove punctuation from instruction.
       let instructionText = instruction.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
       this.app.ask("When you say '" + action + "', I'll " + instructionText.toLowerCase() + ". What should I do next?");
@@ -156,12 +169,20 @@ class ScratchCat {
     }
   }
 
+  /**
+   * Attempt to add instruction to existing, known action.
+   */
   [Actions.ADD_TO_PROGRAM]() {
-    // TODO: set the correct context.
     var action = this.app.getArgument('action');
     var instruction = this.app.getArgument('instruction');
-    this.model.appendInstructionTo(action, instruction);
-    var message = "Okay, I will " + instruction + " next.";
+    var message = "";
+    try {
+      this.model.appendInstructionTo(action, instruction);
+      message = "Okay, I will " + instruction + " next.";
+    } catch(e) {
+      message = "Sorry, I didn't understand that so I couldn't add it to \
+          the program";
+    }
     this.app.tell(message);
   }
 

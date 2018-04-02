@@ -35,7 +35,8 @@ class ScratchCatAction {
 
   /**
    * Get conversational representation of program.
-   * @param {Boolean} opt_english If True, return conversational version of
+   * @param {Boolean} opt_english If True, return a conversational version of
+   *    the instructions. Otherwise, return the ScratchCatInstruction objects.
    * @return {Array<Array>} Scratch program generated from instructions
    */
   getInstructions(opt_english) {

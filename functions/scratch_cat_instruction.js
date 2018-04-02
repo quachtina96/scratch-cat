@@ -21,9 +21,9 @@ class ScratchCatInstruction {
   }
 
   /**
-   * Returns the sentences in the instruction that use undefined actions.
+   * Get the sentences in the instruction that use undefined actions.
    * @param {!String} instruction - String containing the instruction
-   * @param {!Array<!String>} an array of unsupported sentences.
+   * @return {!Array<!String>} an array of unsupported sentences.
    */
   static getUnsupportedSteps(instruction) {
     // Detect multiple statements and split them.

@@ -1,6 +1,8 @@
 /**
- * This file describes the ScratchCatModel class for the voice user interface for
- * programming.
+ * This file describes the ScratchCatModel class, which maintains the state of
+ * the programs created.
+ *
+ * @author Tina Quach (quacht@mit.edu)
  */
 'use strict';
 const ScratchCatAction = require('./scratch_cat_action.js');
@@ -11,16 +13,22 @@ class ScratchCatModel {
   constructor (opt_availableActions) {
     // Map actions to series of steps.
     this.actions = opt_availableActions ? opt_availableActions : new Map();
-    // TODO: delete var below if not needed.
-    // currentProgram maintains list of steps defining the current program.
-    this.currentProgram = [];
     this.currentAction = null;
   }
 
+  /**
+   * Get the names of known actions.
+   * @return {!Array<String>} list of action names
+   */
   getAvailableActions() {
     return Object.keys(this.actions);
   }
 
+  /**
+   * @param {!String} instruction - the instruction given by the user
+   * @return {!Array<!String>} an array of unsupported sentences contained in
+   *   given instruction.
+   */
   getUndefinedActions(instruction) {
     // TODO: Add a way to parse these sentences for actual verbs. This could be
     // using a library to do part of speech tagging, or to build a tree
@@ -31,8 +39,13 @@ class ScratchCatModel {
     return ScratchCatInstruction.getUnsupportedSteps(instruction);
   }
 
-  hasAbilityTo(action) {
-    return action in this.actions;
+  /**
+   * Return whether Scratch knows the action.
+   * @param {!String} actionName - the name of the action
+   * @return {!Boolean} True if Scratch knows the action under given name.
+   */
+  hasAbilityTo(actionName) {
+    return actionName in this.actions;
   }
 
   /**
